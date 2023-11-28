@@ -71,6 +71,17 @@ int main() {
         fprintf(logfile, "%s => create MASTER with pid %d\n", ctime(&current_time), getpid());
         fclose(logfile);
     }
+
+    int pipe_fd[2]; // creazione dell'array per le pipe
+    if((pipe(pipe_fd)) < 0){
+        perror("errore creazione pipe");
+    }
+
+    char str_pipe_fd[2][20]; // conversione fd pipe in stringhe
+    for (int i = 0; i < 2; i++)
+    {
+        sprintf(str_pipe_fd[i], "%d", pipe_fd[i]);
+    }
     
     
 
@@ -97,17 +108,18 @@ int main() {
     */
 
     //server process
-    char * arg_list_server[] = {NULL};
-    child_pids[0] = spawn("./server", arg_list_server);
+    char * arg_list_server[] = {"konsole", "-e","./server", NULL};
+    child_pids[0] = spawn("konsole", arg_list_server);
     
-    //drone process
-    char * arg_list_drone[] = {NULL};
-    child_pids[1] = spawn ("./drone", arg_list_drone);
+    //drone process -----------------------------------------------------------------------
+    char * arg_list_drone[] = {"konsole", "-e","./drone", str_pipe_fd[0], str_pipe_fd[1], NULL};
+    child_pids[1] = spawn ("konsole", arg_list_drone);
 
-    //keyboard_namager process
-    char * arg_list_input[] = {NULL};
-    child_pids[2] = spawn ("./input", arg_list_input);
+    //keyboard_namager process ------------------------------------------------------------
+    char * arg_list_i[] = {"konsole", "-e","./input", str_pipe_fd[0], str_pipe_fd[1], NULL};
+    child_pids[2] = spawn ("konsole", arg_list_i);
 
+    
     sleep(0.5);
     //now need to convert all the integer pid in a string, than pass this string as a argv to watchdog process
     //convert all the pid process fron int to string using sprintf
