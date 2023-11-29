@@ -1,4 +1,4 @@
-#include <stdio.h> 
+#include <ncurses.h> 
 #include <string.h> 
 #include <fcntl.h> 
 #include <sys/stat.h> 
@@ -41,6 +41,9 @@ void sigusr1Handler(int signum, siginfo_t *info, void *context) {
     }
 }
 
+WINDOW *create_new_window(int row, int col, int ystart, int xstart); // creazione delle finestre
+
+
 int main(int argc, char *argv[]) 
 {
     //write into logfil
@@ -68,12 +71,30 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    // parte legata ad ncurses per il server
+    int Srow, Scol;
+    char drone_icon = '#';
 
-    // Infinite loop
-    while(1){
-    /*write the code of the server with shared memory*/
-        sleep(1);      
-    }
+    double Ypos, Xpos; // variabili per collegare la mem condivisa
+
+    WINDOW *map_window; // inizializzo puntatore per la finestra mappa
+
+    // initialization row
+    initscr();raw();cbreak();noecho();keyboard(stdscr, TRUE);
+
+    getmaxyx(stdscr, Srow, Scol);
+    map_window = create_new_window(Srow, Scol, 0, 0);
+
+    
+
     
     return 0;
+}
+
+WINDOW *create_new_window(int row, int col, int ystart, int xstart){
+    WINDOW *local_window = newwin(row, col, ystart, xstart);
+    box(local_window, 0, 0);
+
+    wrefresh(local_window);
+    return local_window;
 }
