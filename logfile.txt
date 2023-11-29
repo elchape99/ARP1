@@ -1,6 +1,5 @@
-Wed Nov 29 08:56:51 2023
- => create MASTER with pid 74359
-Wed Nov 29 08:56:51 2023
- => spawn SERVER with pid 74406Wed Nov 29 08:56:51 2023
- => spawn INPUT wit pid 74408Wed Nov 29 08:56:52 2023
- => spawn DRONE with pid 74410
+Wed Nov 29 09:36:00 2023
+ => create MASTER with pid 77315
+Wed Nov 29 09:36:01 2023
+ => spawn INPUT wit pid 77348Wed Nov 29 09:36:01 2023
+ => spawn SERVER with pid 77350

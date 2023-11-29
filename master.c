@@ -1,11 +1,11 @@
-#include <stdio.h> 
+#include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <unistd.h> 
-#include <string.h> 
-#include <fcntl.h> 
-#include <sys/stat.h> 
-#include <sys/types.h> 
+#include <unistd.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <sys/select.h>
 #include <semaphore.h>
 #include <sys/mman.h>
@@ -14,12 +14,16 @@
 #include <sys/wait.h>
 #include <stdarg.h>
 
+/* number of process that are controlled by watchdog*/
+#define PROCESS_NUMBER 3;
 
 /* Function for write into logfile */
-void writeLog(const char *format, ...) {
-    
+void writeLog(const char *format, ...)
+{
+
     FILE *logfile = fopen("logfile.txt", "a");
-    if (logfile < 0) {
+    if (logfile < 0)
+    {
         perror("Error opening logfile");
         exit(EXIT_FAILURE);
     }
@@ -30,55 +34,74 @@ void writeLog(const char *format, ...) {
     time(&current_time);
 
     fprintf(logfile, "%s => ", ctime(&current_time));
+    fprintf(logfile, " ");
     vfprintf(logfile, format, args);
 
     va_end(args);
     fflush(logfile);
-    if (fclose(logfile) < 0){
+    if (fclose(logfile) < 0)
+    {
         perror("fclose logfile");
     }
 }
 
 /*This function do an exec in child process*/
-int spawn(const char * program, char ** arg_list) {
- 
-  pid_t child_pid = fork();
-  if (child_pid != 0)
-    //main process
-    return child_pid;
+int spawn(const char *program, char **arg_list)
+{
 
-   else {
-    //child process
-    if (execvp (program, arg_list) == -1){
-        perror("exec failed");
-        return 1;
+    pid_t child_pid = fork();
+    if (child_pid != 0)
+        // main process
+        return child_pid;
+
+    else
+    {
+        // child process
+        if (execvp(program, arg_list) == -1)
+        {
+            perror("exec failed");
+            return 1;
+        }
     }
- }
 }
 
-int main() {
-    /* The master spawn all the process with watchdog at the end, so it can pass in argv all the process pid. 
+int main()
+{
+    /* The master spawn all the process with watchdog at the end, so it can pass in argv all the process pid.
     After throught pipe it will pass at all process the watchdog pid.
      */
 
-    //Inizialize the log file, inizialize with mode w, all the data inside will be delete
+    // now are implemented 3 processes, server, drone, input plus watchdog
+
+    // inizialize the variabiles needed
+    int num_ps = PROCESS_NUMBER;
+    // array with all the process pid, here consider also the watchdog
+    pid_t child_pids[num_ps + 1];
+    int i; // usefull for cycle for
+
+    // Inizialize the log file, inizialize with mode w, all the data inside will be delete
     FILE *logfile = fopen("logfile.txt", "w");
-    if(logfile < 0){ //if problem opening file, send error
+    if (logfile < 0)
+    { // if problem opening file, send error
         perror("fopen: logfile");
         return 2;
-    }else{
-        //wtite in logfile
+    }
+    else
+    {
+        // wtite in logfile
         time_t current_time;
-        //obtain local time
+        // obtain local time
         time(&current_time);
         fprintf(logfile, "%s => create MASTER with pid %d\n", ctime(&current_time), getpid());
-        if(fclose(logfile) < 0){
+        if (fclose(logfile) < 0)
+        {
             perror("fclose logfile");
         }
     }
 
     int pipe_fd[2]; // creazione dell'array per le pipe
-    if((pipe(pipe_fd)) < 0){
+    if ((pipe(pipe_fd)) < 0)
+    {
         perror("errore creazione pipe");
     }
 
@@ -87,74 +110,83 @@ int main() {
     {
         sprintf(str_pipe_fd[i], "%d", pipe_fd[i]);
     }
-    
-    
 
-    //now are implemented 3 processes, server, drone, input plus watchdog
+    // this array will need for convert the pisds number in string
+    // convert only the process will be controlled by watchdog
+    char child_pids_str[num_ps][80];
 
-    //inizialize the variabiles needed
-    int num_ps = 3;       
-    pid_t child_pids [num_ps +1];
-    int i;
-
-    //this array will need for convert the pisds number in string
-    char child_pids_str [num_ps][80];
-
-
-    //server process
-    char * arg_list_server[] = {"konsole", "-e","./server",NULL};
+    // server process
+    char *arg_list_server[] = {"konsole", "-e", "./server", NULL};
     child_pids[0] = spawn("konsole", arg_list_server);
-    
-    //drone process -----------------------------------------------------------------------
-    char * arg_list_drone[] = {"konsole", "-e","./drone",  str_pipe_fd[0], str_pipe_fd[1],NULL};
-    child_pids[1] = spawn ("konsole", arg_list_drone);
+    writeLog("SERVER launched by master with pid %i", child_pids[0]);
 
-    //keyboard_namager process ------------------------------------------------------------
-    char * arg_list_i[] = {"konsole", "-e","./input", str_pipe_fd[0], str_pipe_fd[1], NULL};
-    child_pids[2] = spawn ("konsole", arg_list_i);
+    // drone process -----------------------------------------------------------------------
+    char *arg_list_drone[] = {"konsole", "-e", "./drone", str_pipe_fd[0], str_pipe_fd[1], NULL};
+    child_pids[1] = spawn("konsole", arg_list_drone);
+    writeLog("DRONE launched by master with pid %i", child_pids[1]);
+
+
+    // keyboard_namager process ------------------------------------------------------------
+    char *arg_list_i[] = {"konsole", "-e", "./input", str_pipe_fd[0], str_pipe_fd[1], NULL};
+    child_pids[2] = spawn("konsole", arg_list_i);
+    writeLog("INPUT launched by master with pid %i", child_pids[2]);
+
+
 
     FILE *initPid = fopen("pid.txt", "w");
-    if(initPid < 0){
+    if (initPid < 0)
+    {
         perror("fopen initPid");
     }
-    if (fclose(initPid) < 0){
+    if (fclose(initPid) < 0)
+    {
         perror("fclose initPid");
     }
+
     printf("pippo");
     fflush(stdout);
     sleep(1);
-    //now need to convert all the integer pid in a string, than pass this string as a argv to watchdog process
-    //convert all the pid process fron int to string using sprintf
-    for(int i = 0; i < num_ps; i++){   
+
+    // now need to convert all the integer pid in a string, than pass this string as a argv to watchdog process
+    // convert all the pid process fron int to string using sprintf
+    // for now I will pass the pid with regular text file
+    /*
+    for (int i = 0; i < num_ps; i++)
+    {
         sprintf(child_pids_str[i], "%d", child_pids[i]);
-    }
+    }*/
 
     // spawn watchdog, and pass as argument all the pid of processes
-    char * arg_list_wd[] = {child_pids_str[0], child_pids_str[1], child_pids_str[2], NULL};
-    child_pids[3] = spawn ("./wd", arg_list_wd);
+    char *arg_list_wd[] = {NULL};
+    child_pids[3] = spawn("./wd", arg_list_wd);
+    writeLog("WATCHDOG launched by master with pid %i", child_pids[3]);
 
-printf("pippo1");
+    printf("pippo1");
     fflush(stdout);
-    
+
     pid_t waitResult;
     int status;
     for (i = 0; i <= num_ps; i++)
     {
         waitResult = waitpid(child_pids[i], &status, 0);
-        if(waitResult == -1){
+        if (waitResult == -1)
+        {
             perror("waitpid:");
             return 3;
         }
-        if (WIFEXITED(status)) {
+        if (WIFEXITED(status))
+        {
             printf("Process %d is termined with status %d\n", i, WEXITSTATUS(status));
-        } else {
+        }
+        else
+        {
             printf("Iprocess %d is termined with anomaly\n", i);
         }
     }
-    
+
     /*
     while (1)
-    {   
+    {
         if(wait(NULL) == -1){
             break;
         }
