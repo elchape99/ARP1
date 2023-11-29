@@ -82,7 +82,6 @@ int main(int argc, char *argv[]) {
     }
     printf("valore fd controllo(s,l): %d, %d\n", pipe_fd[1], pipe_fd[0]);
     fflush(stdout);
-    sleep(10);
     char input_char; // definisco la variabile di input
 
     // definizione delle variabili di ncurses ------

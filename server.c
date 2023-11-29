@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
     WINDOW *map_window; // inizializzo puntatore per la finestra mappa
 
     // initialization row
-    initscr();raw();cbreak();noecho();keyboard(stdscr, TRUE);
+    initscr();raw();cbreak();noecho();keypad(stdscr, TRUE);
 
     getmaxyx(stdscr, Srow, Scol);
     map_window = create_new_window(Srow, Scol, 0, 0);
