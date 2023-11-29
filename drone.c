@@ -12,6 +12,11 @@
 #include <time.h>
 #include <stdarg.h>
 
+<<<<<<< HEAD
+=======
+#define INP_NUM 8
+
+>>>>>>> d78f10c8511c433f11a7681679c387378faf3b55
 /* function for write in logfile*/
 void writeLog(const char *format, ...)
 {
@@ -100,8 +105,13 @@ int main(int argc, char *argv[])
     close(pipe_fd[1]);
 
     // inizializzazione delle variabili per la dinamica
+<<<<<<< HEAD
     double *input_vect = malloc(sizeof(double) * 8); // riservo la memoria per il vettore di input
     for (int i = 0; i < 8; i++)
+=======
+    double *input_vect = malloc(sizeof(double) * INP_NUM); // riservo la memoria per il vettore di input
+    for (int i = 0; i < INP_NUM; i++)
+>>>>>>> d78f10c8511c433f11a7681679c387378faf3b55
     {
         input_vect[i] = 0.0;
         printf("%.2f  ", input_vect[i]);
@@ -152,7 +162,11 @@ int main(int argc, char *argv[])
                 printf("controllo lettura: %d, ( %c )\n", retVal_read, ch); // controllo valori letti
                 fflush(stdout);
             }
+<<<<<<< HEAD
             input_vect = generate_input_vect(&input_vect, ch); // gli passo il valore di input ricevuto e scrivo nel vettore
+=======
+            input_vect = generate_input_vect( &input_vect, ch ); // gli passo il valore di input ricevuto e scrivo nel vettore
+>>>>>>> d78f10c8511c433f11a7681679c387378faf3b55
             for (int i = 0; i < 8; i++)
             {
                 printf("%.2f ", input_vect[i]);
@@ -225,13 +239,15 @@ double *generate_input_vect(double **vect_pointer, char ch)
 
 double *put_vector_to_zero(double **vect_pointer)
 {
+<<<<<<< HEAD
     for (int i = 0; i < 8; i++)
+=======
+    for (int i = 0; i < INP_NUM; i++)
+>>>>>>> d78f10c8511c433f11a7681679c387378faf3b55
     {
         (*vect_pointer)[i] = 0.0; // inizializzazione
-        printf("%d", i);
     }
-    printf("\n");
-    fflush(stdout);
+    return *vect_pointer;
 }
 
 double *generate_x_force(double *vect_pointer, double *force)
