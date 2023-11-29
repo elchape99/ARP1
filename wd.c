@@ -50,8 +50,9 @@ void sigusr2Handler(int signum, siginfo_t *info, void *context) {
 
 int main(int argc, char *argv[])  
 {
+    
     // In this array I will put all the proces pid converted in int
-    pid_t pids[argc];
+    int pids[argc];
     int i; //declared for all the for cycle
 
     /*configure the handler for sigusr2*/
@@ -62,15 +63,33 @@ int main(int argc, char *argv[])
         perror("sigaction");
         return -1;
     }
-    /* convert the pid in argv from dtring to int*/
+    /*
+    // convert the pid in argv from dtring to int
     for (i = 0; i < argc; i++){
         // convert all the pid form string to int
         pids[i] = atoi(argv[i]);
     }
+    */
+    /* read the pid from file text*/
+    FILE *initPid = fopen("pid_file.txt", "r");
+    if (initPid < 0) {
+        perror("fopen initPid");
+        exit(EXIT_FAILURE);
+    }
+    fscanf(initPid, "%d %d %d", &pids[0], &pids[1], &pids[2]);
+
+    // Chiudi il file
+    if (fclose(initPid) < 0){
+        perror("fclose initPid");
+    }
+
+    writeLog("riceived pid1 %d, pid2 %d, pid3 %d", pids[0], pids[1], pids[2]);
 
     while(1){
+
+        counter = 0; //Inizialize the counter every time entr in the loop
         /* send a signal to all process */
-        for (i = 0; i< argc; i++){  
+        for (i = 0; i < argc; i++){  
             /* send signal to all process*/
             kill(pids[i], SIGUSR1);
             /* increment the counter when send the signal*/
@@ -92,8 +111,8 @@ int main(int argc, char *argv[])
                     writeLog("process %d is closed by WATCHDOG", pids[j]);
                 }
                 exit(0);
-            }    
-        sleep(5);     
+            }  
+        sleep(5);  
         }     
     }
     return 0;

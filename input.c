@@ -36,7 +36,7 @@ void writeLog(const char *format, ...) {
     fflush(logfile);
 }
 
-// global variables wit th pid of watchdog, also the signal handler could take it
+// global variables with pid of watchdog, also the signal handler could take it
 pid_t wd;
 
 void sigusr1Handler(int signum, siginfo_t *info, void *context) {
@@ -52,9 +52,20 @@ WINDOW *create_new_window(int row, int col, int ystart, int xstart);
 void case_execution(char input_char, int PRy, int PRx, WINDOW *print_pointer, WINDOW *color_pointer, int write_fd, int read_fd);
 
 int main(int argc, char *argv[]) {
+    pid_t input_pid = getpid();
     //write into logfile
-    writeLog("spawn INPUT wit pid %d", getpid());
-       
+    writeLog("spawn INPUT wit pid %d", input_pid);
+    // write the pid into pid file, so the wd could read that pid 
+    FILE *initPid = fopen ("pid.txt", "a");
+    if (initPid < 0){
+        perror("fopen initPid:");
+    } 
+    if (fprintf(initPid, "%i ", input_pid) < 0){
+        perror("fprintf initPid");
+    }
+    if (fclose(initPid)){
+        perror("fclose initPid");
+    }
     //configure the handler for sigusr1
     struct sigaction sa_usr1;
     sa_usr1.sa_sigaction = sigusr1Handler;
@@ -71,7 +82,7 @@ int main(int argc, char *argv[]) {
     }
     printf("valore fd controllo(s,l): %d, %d\n", pipe_fd[1], pipe_fd[0]);
     fflush(stdout);
-    
+    sleep(10);
     char input_char; // definisco la variabile di input
 
     // definizione delle variabili di ncurses ------

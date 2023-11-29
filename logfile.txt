@@ -1,13 +1,6 @@
-Tue Nov 28 17:58:56 2023
- => create MASTER with pid 58639
-Tue Nov 28 17:58:56 2023
- => spawn server with pid 58640
-Tue Nov 28 17:58:56 2023
- => spawn INPUT wit pid 58642Tue Nov 28 17:58:56 2023
- => WATCHDOG received signal from 58640Tue Nov 28 17:58:56 2023
- => Process 58640 is aliveTue Nov 28 17:58:56 2023
- => spawn drone with pid 58641Tue Nov 28 17:59:01 2023
- => WATCHDOG received signal from 58641Tue Nov 28 17:59:01 2023
- => Process 58641 is aliveTue Nov 28 17:59:06 2023
- => WATCHDOG received signal from 58642Tue Nov 28 17:59:06 2023
- => Process 58642 is alive
+Wed Nov 29 08:56:51 2023
+ => create MASTER with pid 74359
+Wed Nov 29 08:56:51 2023
+ => spawn SERVER with pid 74406Wed Nov 29 08:56:51 2023
+ => spawn INPUT wit pid 74408Wed Nov 29 08:56:52 2023
+ => spawn DRONE with pid 74410

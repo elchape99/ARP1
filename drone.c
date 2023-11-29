@@ -12,6 +12,7 @@
 #include <time.h>
 #include <stdarg.h>
 
+
 /* function for write in logfile*/
 void writeLog(const char *format, ...) {
     
@@ -37,6 +38,7 @@ void writeLog(const char *format, ...) {
 void sigusr1Handler(int signum, siginfo_t *info, void *context) {
     if (signum == SIGUSR1){
         /*send a signal SIGUSR2 to watchdog */
+
         kill(info->si_pid, SIGUSR2);
     }
 }
@@ -53,8 +55,21 @@ double *position(double Velocity, double initial_position, double *new_pose); //
 
 int main(int argc,char *argv[]) {
 
+    pid_t drone_pid = getpid();
     //write into logfile
-    writeLog("spawn drone with pid %d", getpid());
+    writeLog("spawn DRONE with pid %d", drone_pid);
+
+    // write the pid inside the pid file
+     FILE *initPid = fopen ("pid.txt", "a");
+    if (initPid < 0){
+        perror("fopen initPid:");
+    } 
+    if (fprintf(initPid, "%i ", drone_pid) < 0){
+        perror("fprintf initPid");
+    }
+    if (fclose(initPid)){
+        perror("fclose initPid");
+    }
     
 
     //configure the handler for sigusr1

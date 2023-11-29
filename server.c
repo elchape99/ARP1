@@ -31,6 +31,9 @@ void writeLog(const char *format, ...) {
 
     va_end(args);
     fflush(logfile);
+    if (fclose(logfile)){
+        perror("fclose logfile");
+    }
 }
 
 void sigusr1Handler(int signum, siginfo_t *info, void *context) {
@@ -38,25 +41,30 @@ void sigusr1Handler(int signum, siginfo_t *info, void *context) {
         /*send a signal SIGUSR2 to watchdog */
         //printf("SERVER sig handler");
         kill(info->si_pid, SIGUSR2);
+        printf("server signal handler");
+        fflush(stdout);
+        
     }
 }
 
 int main(int argc, char *argv[]) 
 {
-    //write into logfil
-    FILE *logfile = fopen("logfile.txt", "a");
-    if(logfile < 0){ 
-        //error opening log file
-        perror("fopen: logfile");
-        return 1;
-    }else{
-        //wtite in logfile
-        time_t current_time;
-        //obtain local time
-        time(&current_time);
-        fprintf(logfile, "%s => spawn server with pid %d\n", ctime(&current_time), getpid());
-        fclose(logfile);
+    pid_t server_pid = getpid();
+    //write into logfile
+    writeLog("spawn SERVER with pid %d", server_pid);
+
+    /* write the pid inside a file and after the wd will read this pid*/
+    FILE *initPid = fopen ("pid.txt", "a");
+    if (initPid < 0){
+        perror("fopen initPid:");
+    } 
+    if (fprintf(initPid, "%i ", server_pid) < 0){
+        perror("fprintf initPid");
     }
+    if (fclose(initPid)){
+        perror("fclose initPid");
+    }
+   
 
     //configure the handler for sigusr1
     struct sigaction sa_usr1;

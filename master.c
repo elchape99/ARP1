@@ -34,6 +34,9 @@ void writeLog(const char *format, ...) {
 
     va_end(args);
     fflush(logfile);
+    if (fclose(logfile) < 0){
+        perror("fclose logfile");
+    }
 }
 
 /*This function do an exec in child process*/
@@ -69,7 +72,9 @@ int main() {
         //obtain local time
         time(&current_time);
         fprintf(logfile, "%s => create MASTER with pid %d\n", ctime(&current_time), getpid());
-        fclose(logfile);
+        if(fclose(logfile) < 0){
+            perror("fclose logfile");
+        }
     }
 
     int pipe_fd[2]; // creazione dell'array per le pipe
@@ -94,33 +99,30 @@ int main() {
 
     //this array will need for convert the pisds number in string
     char child_pids_str [num_ps][80];
-/*
-    int fd[2];
-    if (pipe(fd) == -1){
-        perror("pipe");
-        return 3;
-    }
-    
-    char fd_str[2];
-    for (i = 0; i < 2; i++){
 
-    }
-    */
 
     //server process
-    char * arg_list_server[] = {"konsole", "-e","./server", NULL};
+    char * arg_list_server[] = {"konsole", "-e","./server",NULL};
     child_pids[0] = spawn("konsole", arg_list_server);
     
     //drone process -----------------------------------------------------------------------
-    char * arg_list_drone[] = {"konsole", "-e","./drone", str_pipe_fd[0], str_pipe_fd[1], NULL};
+    char * arg_list_drone[] = {"konsole", "-e","./drone",  str_pipe_fd[0], str_pipe_fd[1],NULL};
     child_pids[1] = spawn ("konsole", arg_list_drone);
 
     //keyboard_namager process ------------------------------------------------------------
     char * arg_list_i[] = {"konsole", "-e","./input", str_pipe_fd[0], str_pipe_fd[1], NULL};
     child_pids[2] = spawn ("konsole", arg_list_i);
 
-    
-    sleep(0.5);
+    FILE *initPid = fopen("pid.txt", "w");
+    if(initPid < 0){
+        perror("fopen initPid");
+    }
+    if (fclose(initPid) < 0){
+        perror("fclose initPid");
+    }
+    printf("pippo");
+    fflush(stdout);
+    sleep(1);
     //now need to convert all the integer pid in a string, than pass this string as a argv to watchdog process
     //convert all the pid process fron int to string using sprintf
     for(int i = 0; i < num_ps; i++){   
@@ -131,7 +133,8 @@ int main() {
     char * arg_list_wd[] = {child_pids_str[0], child_pids_str[1], child_pids_str[2], NULL};
     child_pids[3] = spawn ("./wd", arg_list_wd);
 
-
+printf("pippo1");
+    fflush(stdout);
     
     pid_t waitResult;
     int status;
